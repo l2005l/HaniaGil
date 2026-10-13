@@ -1,0 +1,611 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>hania גיל – מחשבון גיל עברי ולועזי</title>
+<meta name="description" content="מחשבון גיל מדויק לפי תאריך לידה לועזי או עברי, עם רשימות משפחה וחברים ותזכורות לימי הולדת.">
+<link rel="manifest" href="manifest.webmanifest">
+<meta name="theme-color" content="#F4F5F8" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1B1F29" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="icons/icon-192.png" type="image/png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="hania גיל">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@500;700;900&display=swap">
+<style>
+/* Layout: one narrow column with three tabs; Gregorian coded blue, Hebrew coded amber; pickers are light bottom sheets */
+:root{
+  --bg:#F4F5F8; --surface:#FFFFFF; --ink:#1A1F2E; --muted:#5D6478; --line:#DDE1EA; --scrim:rgba(26,31,46,.35);
+  --greg:#2F5BD3; --greg-soft:#E8EEFC; --heb:#9C5A12; --heb-soft:#F6ECDD; --warn:#B3261E; --ok:#1E7A4C; --ok-soft:#E3F3EA;
+  --display:"Frank Ruhl Libre", "David", "Times New Roman", serif;
+  --body:"Assistant", "Segoe UI", Arial, sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#1B1F29; --surface:#252A36; --ink:#EEF0F5; --muted:#A8AFC2; --line:#373D4C; --scrim:rgba(0,0,0,.45);
+  --greg:#8FAEF8; --greg-soft:#2A3456; --heb:#E8B06A; --heb-soft:#3D3122; --warn:#F2B8B5; --ok:#86D3A6; --ok-soft:#24392D; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#1B1F29; --surface:#252A36; --ink:#EEF0F5; --muted:#A8AFC2; --line:#373D4C; --scrim:rgba(0,0,0,.45);
+  --greg:#8FAEF8; --greg-soft:#2A3456; --heb:#E8B06A; --heb-soft:#3D3122; --warn:#F2B8B5; --ok:#86D3A6; --ok-soft:#24392D; color-scheme:dark}
+*{box-sizing:border-box}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+[hidden]{display:none!important}
+img{max-width:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--body);font-size:16px;line-height:1.5}
+.wrap{max-width:560px;margin:0 auto;padding-inline:16px;padding-block:24px 48px;display:grid;gap:18px}
+h1{font-family:var(--display);font-weight:900;font-size:2rem;margin:0;line-height:1.1;text-wrap:balance}
+h2{font-family:var(--display);font-weight:700;font-size:1.5rem;margin:0}
+.sub{color:var(--muted);margin:4px 0 0}
+button{font:inherit;color:inherit}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:grid;gap:16px}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;background:var(--bg);border:1px solid var(--line);border-radius:10px;padding:4px;gap:4px}
+.seg button{font-weight:600;border:0;border-radius:7px;padding:9px 6px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--ink);color:var(--surface)}
+.seg button[aria-pressed="true"].g{background:var(--greg);color:var(--surface)}
+.seg button[aria-pressed="true"].h{background:var(--heb);color:var(--surface)}
+.tabs{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--greg);outline-offset:2px}
+.lbl{display:block;font-size:.8rem;font-weight:700;letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
+input[type=number],input[type=text]{font:inherit;font-size:1.05rem;width:100%;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);color:var(--ink);min-width:0}
+.df{display:grid;grid-template-columns:1fr 1.5fr 1.2fr;gap:8px}
+.df > div{min-width:0}
+.dfbtn{width:100%;text-align:start;font-size:1.05rem;padding:10px 12px;border:1px solid var(--line);border-radius:9px;background:var(--surface);cursor:pointer;display:flex;justify-content:space-between;align-items:center;gap:6px;white-space:nowrap;overflow:hidden}
+.dfbtn::after{content:"";width:7px;height:7px;border-left:2px solid var(--muted);border-bottom:2px solid var(--muted);transform:rotate(-45deg) translateY(-2px);flex:none}
+.yhint{font-family:var(--display);color:var(--heb);font-size:.95rem;margin-top:4px;min-height:1.4em}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.95rem;cursor:pointer}
+.check input{width:18px;height:18px;margin-top:3px;accent-color:var(--heb);flex:none}
+.check small{display:block;color:var(--muted)}
+.row2{display:flex;gap:10px;align-items:start;flex-wrap:wrap}
+.row2 > div{flex:1 1 240px;min-width:0}
+.btn{font-weight:700;border:1px solid var(--line);border-radius:9px;padding:10px 16px;background:var(--surface);color:var(--greg);cursor:pointer}
+.btn.primary{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.btn.danger{color:var(--warn)}
+.btn.danger.armed{background:var(--warn);color:var(--surface);border-color:var(--warn)}
+.example{font-size:.8rem;font-weight:700;color:var(--heb);background:var(--heb-soft);border-radius:999px;padding:3px 10px;justify-self:start}
+
+.result{display:grid;gap:18px}
+.hero{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.big{font-family:var(--display);font-weight:900;font-size:5.2rem;line-height:.9;font-variant-numeric:tabular-nums}
+.bigu{font-family:var(--display);font-size:1.6rem;font-weight:700}
+.exact{font-size:1.1rem;margin:2px 0 0;font-weight:600}
+.err{color:var(--warn);font-weight:600;margin:0}
+.dates{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dt{border-radius:10px;padding:12px 14px;min-width:0}
+.dt.g{background:var(--greg-soft)} .dt.h{background:var(--heb-soft)}
+.dt .k{font-size:.75rem;font-weight:700;letter-spacing:.05em}
+.dt.g .k{color:var(--greg)} .dt.h .k{color:var(--heb)}
+.dt .v{font-family:var(--display);font-weight:700;font-size:1.25rem;line-height:1.25;margin-top:2px}
+.dt .s{font-size:.88rem;color:var(--muted)}
+.rows{display:grid;border-top:1px solid var(--line)}
+.row{display:grid;grid-template-columns:auto 1fr auto;gap:10px;align-items:center;padding:12px 0;border-bottom:1px solid var(--line)}
+.dot{width:10px;height:10px;border-radius:50%}
+.dot.g{background:var(--greg)} .dot.h{background:var(--heb)}
+.row .t{min-width:0}
+.row .t b{display:block;font-weight:700}
+.row .t span{color:var(--muted);font-size:.9rem}
+.pill{font-weight:700;font-size:.85rem;border-radius:999px;padding:4px 10px;white-space:nowrap;font-variant-numeric:tabular-nums}
+.pill.g{background:var(--greg-soft);color:var(--greg)} .pill.h{background:var(--heb-soft);color:var(--heb)}
+.pill.now{background:var(--ok-soft);color:var(--ok)}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}
+.st{text-align:center;min-width:0}
+.st b{display:block;font-family:var(--display);font-weight:700;font-size:1.15rem;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.st span{font-size:.8rem;color:var(--muted)}
+.note{font-size:.82rem;color:var(--muted);margin:0}
+
+/* people */
+.phead{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.alerts{background:var(--ok-soft);border-radius:12px;padding:12px 14px;display:grid;gap:6px}
+.alerts b{color:var(--ok);font-size:.8rem;letter-spacing:.04em}
+.alerts p{margin:0;font-weight:600}
+.plist{display:grid;gap:12px}
+.person{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px 16px;display:grid;gap:10px}
+.ptop{display:flex;justify-content:space-between;gap:10px;align-items:start}
+.ptop > div{min-width:0}
+.pname{font-family:var(--display);font-weight:700;font-size:1.3rem;line-height:1.2;overflow-wrap:anywhere}
+.pmeta{color:var(--muted);font-size:.88rem}
+.edit{border:0;background:none;color:var(--greg);font-weight:700;cursor:pointer;padding:4px}
+.nb{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:.92rem}
+.nb span:first-child{min-width:0}
+.chips{display:flex;flex-wrap:wrap;gap:6px}
+.chip{border:1px solid var(--line);background:var(--surface);color:var(--muted);border-radius:999px;padding:5px 12px;font-size:.85rem;font-weight:600;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.chip[aria-pressed="true"]::before{content:"✓ "}
+.remset{border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:0;display:grid;gap:10px;background:var(--ok-soft)}
+.remset .sw input{accent-color:var(--ok)}
+.remset b{color:var(--ink)}
+.remopts{display:flex;flex-wrap:wrap;gap:8px 18px;padding-inline-start:28px}
+.remopts input{accent-color:var(--ok)}
+.empty{text-align:center;color:var(--muted);padding:28px 12px;border:1px dashed var(--line);border-radius:14px;margin:0}
+
+/* sheets */
+.scrim{position:fixed;inset:0;background:var(--scrim);z-index:20;display:flex;align-items:flex-end;justify-content:center}
+.scrim.top{z-index:30}
+.sheet{background:var(--surface);color:var(--ink);width:100%;max-width:560px;max-height:88%;overflow:auto;border-radius:18px 18px 0 0;padding:16px 16px calc(20px + env(safe-area-inset-bottom,0px));display:grid;gap:14px;align-content:start}
+.shead{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.shead b{font-family:var(--display);font-size:1.25rem}
+.grid{display:grid;gap:6px}
+.grid button{min-height:46px;border:1px solid var(--line);border-radius:10px;background:var(--bg);cursor:pointer;font-weight:600;font-size:1rem;padding:6px 4px;font-variant-numeric:tabular-nums}
+.grid button[aria-pressed="true"]{background:var(--ink);color:var(--surface);border-color:var(--ink)}
+.grid.c7{grid-template-columns:repeat(7,1fr)} .grid.c3{grid-template-columns:repeat(3,1fr)}
+.factions{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between}
+@media (max-width:420px){.stats{grid-template-columns:repeat(2,1fr);row-gap:14px}.big{font-size:4.4rem}.df{grid-template-columns:1fr 1.5fr}.df > div:last-child{grid-column:1 / -1}.grid.c7 button{min-height:42px;font-size:.92rem}}
+@media (prefers-reduced-motion:no-preference){.sheet{animation:up .18s ease-out}@keyframes up{from{transform:translateY(24px);opacity:.6}}}
+.brand{display:inline-flex;align-items:center;gap:8px;font-weight:700;color:var(--muted);font-size:.9rem;letter-spacing:.04em;margin-bottom:6px}
+.brand img{width:26px;height:26px;border-radius:7px}
+.settings{display:grid;gap:12px}
+.settings h3{margin:0;font-size:1rem}
+.srow{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.srow p{margin:0;color:var(--muted);font-size:.88rem;flex:1 1 220px;min-width:0}
+.install{display:flex;gap:12px;align-items:center;background:var(--greg-soft);border-radius:12px;padding:12px 14px}
+.install p{margin:0;flex:1;min-width:0;font-size:.92rem}
+.toast{position:fixed;inset-inline:16px;bottom:calc(16px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--surface);border-radius:10px;padding:12px 16px;font-weight:600;z-index:40;text-align:center}
+</style>
+</head>
+<body>
+<div class="wrap" dir="rtl" lang="he">
+  <header>
+    <div class="brand"><img src="icons/icon-192.png" alt="">hania גיל</div>
+    <h1>מחשבון גיל</h1>
+    <p class="sub">גיל מדויק לפי תאריך לועזי או עברי, וימי הולדת של המשפחה והחברים</p>
+  </header>
+
+  <div class="install" id="installBox" hidden>
+    <p id="installText">התקינו את האפליקציה במסך הבית לגישה מהירה ולתזכורות.</p>
+    <button class="btn primary" id="installBtn">התקנה</button>
+  </div>
+
+  <div class="seg tabs" role="tablist" aria-label="מסכים">
+    <button id="tab-calc" aria-pressed="true">מחשבון</button>
+    <button id="tab-family" aria-pressed="false">משפחה</button>
+    <button id="tab-friends" aria-pressed="false">חברים</button>
+  </div>
+
+  <!-- Calculator -->
+  <div id="view-calc" class="wrap" style="padding:0">
+    <section class="card" aria-label="תאריך לידה">
+      <span class="example" id="exampleTag">דוגמה – הזינו את תאריך הלידה שלכם</span>
+      <div class="seg" role="group" aria-label="סוג תאריך">
+        <button class="g" id="modeG" aria-pressed="true">תאריך לועזי</button>
+        <button class="h" id="modeH" aria-pressed="false">תאריך עברי</button>
+      </div>
+      <div id="birthField"></div>
+      <label class="check" for="night">
+        <input type="checkbox" id="night">
+        <span>נולד/ה בין השקיעה לחצות
+          <small>היום העברי מתחיל בשקיעה, כך שהתאריך העברי מקדים ביום אחד</small></span>
+      </label>
+      <div class="row2">
+        <div><span class="lbl">חישוב לתאריך</span><div id="targetField"></div></div>
+        <button class="btn" id="todayBtn" style="margin-top:26px">היום</button>
+      </div>
+    </section>
+    <section class="card result" id="result" aria-live="polite"></section>
+  </div>
+
+  <!-- People -->
+  <div id="view-people" hidden class="wrap" style="padding:0">
+    <div class="phead">
+      <h2 id="pTitle">משפחה</h2>
+      <button class="btn primary" id="addBtn">הוספה</button>
+    </div>
+    <div class="alerts" id="alerts" hidden></div>
+    <div class="plist" id="plist"></div>
+    <p class="note" id="syncNote"></p>
+    <section class="card settings" aria-label="הגדרות">
+      <div class="srow">
+        <div style="min-width:0;flex:1 1 220px"><h3>התראות</h3><p id="notifState">קבלו התראה בטלפון ביום התזכורת.</p></div>
+        <button class="btn" id="notifBtn">הפעלת התראות</button>
+      </div>
+      <div class="srow">
+        <div style="min-width:0;flex:1 1 220px"><h3>גיבוי</h3><p>שמרו קובץ גיבוי של הרשימות, או שחזרו אותן במכשיר אחר.</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <button class="btn" id="exportBtn">שמירת גיבוי</button>
+          <button class="btn" id="importBtn">שחזור</button>
+          <input type="file" id="importFile" accept="application/json,.json" hidden>
+        </div>
+      </div>
+    </section>
+  </div>
+</div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<!-- Person form sheet -->
+<div class="scrim" id="formScrim" hidden>
+  <form class="sheet" id="pform" role="dialog" aria-modal="true" aria-labelledby="formTitle" dir="rtl" lang="he" novalidate>
+    <div class="shead"><b id="formTitle">הוספת אדם</b><button type="button" class="edit" id="formClose">סגירה</button></div>
+    <div><label class="lbl" for="fName">שם</label><input type="text" id="fName" autocomplete="off" placeholder="למשל: סבתא רחל"></div>
+    <div><span class="lbl">שייכות</span>
+      <div class="seg" role="group" aria-label="שייכות"><button type="button" id="fGrpFamily">משפחה</button><button type="button" id="fGrpFriends">חברים</button></div></div>
+    <div><span class="lbl">תאריך לידה לפי</span>
+      <div class="seg" role="group" aria-label="סוג תאריך"><button type="button" class="g" id="fCalG">לועזי</button><button type="button" class="h" id="fCalH">עברי</button></div></div>
+    <div id="formField"></div>
+    <label class="check" for="fNight"><input type="checkbox" id="fNight"><span>נולד/ה בין השקיעה לחצות</span></label>
+    <div><span class="lbl">חוגגים יום הולדת</span>
+      <div class="seg" role="group" aria-label="חוגגים לפי"><button type="button" class="g" id="fByG">לועזי</button><button type="button" class="h" id="fByH">עברי</button><button type="button" id="fByBoth">שניהם</button></div></div>
+    <fieldset class="remset">
+      <label class="check sw" for="fRemOn"><input type="checkbox" id="fRemOn"><span><b>תזכורת ליום ההולדת</b><small>בחרו מתי להזכיר לכם</small></span></label>
+      <div class="remopts" id="fRemOpts">
+        <label class="check" for="fRWeek"><input type="checkbox" id="fRWeek"><span>שבוע לפני</span></label>
+        <label class="check" for="fRDay"><input type="checkbox" id="fRDay"><span>יום לפני</span></label>
+        <label class="check" for="fRToday"><input type="checkbox" id="fRToday"><span>ביום עצמו</span></label>
+      </div>
+    </fieldset>
+    <p class="err" id="formErr" hidden></p>
+    <div class="factions">
+      <button type="submit" class="btn primary" id="fSave">שמירה</button>
+      <button type="button" class="btn danger" id="fDelete" hidden>מחיקה</button>
+    </div>
+  </form>
+</div>
+
+<!-- Day / month picker sheet -->
+<div class="scrim top" id="pickScrim" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="pickTitle" dir="rtl" lang="he">
+    <div class="shead"><b id="pickTitle"></b><button type="button" class="edit" id="pickClose">סגירה</button></div>
+    <div class="grid" id="pickGrid"></div>
+  </div>
+</div>
+
+<script src="cal.js"></script>
+<script>
+const C = window.Cal;
+const $ = id => document.getElementById(id);
+const fmt = n => n.toLocaleString('he-IL');
+const DOW = ['ראשון','שני','שלישי','רביעי','חמישי','שישי','שבת'];
+const dow = rd => 'יום ' + DOW[((rd % 7) + 7) % 7];
+const inDays = n => n === 0 ? 'היום!' : n === 1 ? 'מחר' : `בעוד ${fmt(n)} ימים`;
+const esc = s => String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function unit(n, one, two, many){ return n === 1 ? one : n === 2 ? two : `${n} ${many}`; }
+function joinHe(p){ p = p.filter(Boolean); return p.length < 2 ? p.join('') : p.slice(0,-1).join(', ') + ' ו' + p[p.length-1]; }
+const today = () => C.todayRD();
+
+// ---------- Picker sheet ----------
+let pickCb = null, pickReturn = null;
+function openPicker(title, opts, cols, current, cb){
+  pickCb = cb; pickReturn = document.activeElement;
+  $('pickTitle').textContent = title;
+  const g = $('pickGrid'); g.className = 'grid ' + cols;
+  g.innerHTML = opts.map(o => `<button type="button" data-v="${o.v}" aria-pressed="${o.v === current}">${o.label}</button>`).join('');
+  $('pickScrim').hidden = false;
+  (g.querySelector('[aria-pressed="true"]') || g.firstElementChild).focus();
+}
+function closePicker(){ $('pickScrim').hidden = true; pickReturn && pickReturn.focus && pickReturn.focus(); }
+$('pickGrid').addEventListener('click', e => { const b = e.target.closest('button'); if(!b) return; const v = +b.dataset.v; closePicker(); pickCb && pickCb(v); });
+$('pickClose').onclick = closePicker;
+$('pickScrim').addEventListener('click', e => { if (e.target === $('pickScrim')) closePicker(); });
+
+// ---------- Date field: day + month buttons, typed year ----------
+function DateField(el, idp, onChange){
+  el.innerHTML = `<div class="df">
+    <div><span class="lbl">יום</span><button type="button" class="dfbtn" id="${idp}D"></button></div>
+    <div><span class="lbl">חודש</span><button type="button" class="dfbtn" id="${idp}M"></button></div>
+    <div><label class="lbl" for="${idp}Y">שנה</label><input type="number" id="${idp}Y" inputmode="numeric"><div class="yhint" id="${idp}H"></div></div></div>`;
+  const s = { cal:'g', y:1990, m:1, d:1 };
+  const dB = $(idp+'D'), mB = $(idp+'M'), yI = $(idp+'Y'), hint = $(idp+'H');
+  const yearOk = () => s.cal === 'g' ? (s.y >= 1000 && s.y <= 2300) : (s.y >= 4800 && s.y <= 6200);
+  function paint(){
+    dB.textContent = s.cal === 'g' ? s.d : C.gem(s.d);
+    mB.textContent = s.cal === 'g' ? `${s.m} · ${C.GMONTHS[s.m-1]}` : C.monthName(s.m, yearOk() ? s.y : 5785);
+    if (+yI.value !== s.y) yI.value = s.y || '';
+    yI.placeholder = s.cal === 'g' ? 'למשל 1976' : 'למשל 5736';
+    hint.textContent = s.cal === 'h' && yearOk() ? C.gem(s.y) : '';
+    hint.hidden = s.cal === 'g';
+  }
+  dB.onclick = () => openPicker('יום', Array.from({length: s.cal === 'g' ? 31 : 30}, (_, i) => ({v:i+1, label: s.cal === 'g' ? i+1 : C.gem(i+1)})), 'c7', s.d, v => { s.d = v; paint(); onChange(); });
+  mB.onclick = () => {
+    const y = yearOk() ? s.y : 5785;
+    const opts = s.cal === 'g' ? C.GMONTHS.map((n,i) => ({v:i+1, label:n}))
+      : [7,8,9,10,11,12].concat(C.isLeap(y) ? [13] : [], [1,2,3,4,5,6]).map(m => ({v:m, label:C.monthName(m, y)}));
+    openPicker('חודש', opts, 'c3', s.m, v => { s.m = v; paint(); onChange(); });
+  };
+  yI.addEventListener('input', () => { s.y = +yI.value; if (s.cal === 'h' && s.m === 13 && yearOk() && !C.isLeap(s.y)) s.m = 12; paint(); onChange(); });
+  return {
+    set(v){ Object.assign(s, v); paint(); },
+    get(){ return { ...s }; },
+    // Validated value -> {gRD, heb} using the sunset flag
+    resolve(night){
+      if (!s.y || !yearOk()) return { error: s.cal === 'g' ? 'הקלידו שנה לועזית, למשל 1976' : 'הקלידו שנה עברית במספרים, למשל 5750' };
+      if (s.cal === 'g'){
+        const md = C.gMonthDays(s.y, s.m);
+        if (s.d > md) return { error: `ב${C.GMONTHS[s.m-1]} ${s.y} יש רק ${md} ימים` };
+        const rd = C.gToRD(s.y, s.m, s.d);
+        return { gRD: rd, heb: C.rdToHeb(rd + (night ? 1 : 0)) };
+      }
+      if (s.m === 13 && !C.isLeap(s.y)) return { error: 'השנה הזו אינה מעוברת' };
+      const md = C.monthDays(s.y, s.m);
+      if (s.d > md) return { error: `ב${C.monthName(s.m, s.y)} ${C.gem(s.y)} יש רק ${md} ימים` };
+      return { gRD: C.hebToRD(s.y, s.m, s.d) - (night ? 1 : 0), heb: { y:s.y, m:s.m, d:s.d } };
+    },
+    // Switch calendar, keeping the same birth date
+    switchTo(cal, night){
+      if (cal === s.cal) return;
+      const r = this.resolve(night);
+      s.cal = cal;
+      if (!r.error){ const v = cal === 'g' ? C.rdToG(r.gRD) : r.heb; s.y = v.y; s.m = v.m; s.d = v.d; }
+      else { s.y = 0; s.m = cal === 'g' ? 1 : 7; s.d = 1; }
+      paint();
+    }
+  };
+}
+
+// ---------- Calculator ----------
+let calcMode = 'g', touched = false;
+const birth = DateField($('birthField'), 'b', () => { if(!touched){ touched = true; $('exampleTag').hidden = true; } renderCalc(); });
+const target = DateField($('targetField'), 't', renderCalc);
+birth.set({ cal:'g', y:1990, m:5, d:14 });
+target.set({ cal:'g', ...C.rdToG(today()) });
+
+function renderCalc(){
+  const out = $('result');
+  const night = $('night').checked;
+  const b = birth.resolve(night), t = target.resolve(false);
+  if (b.error){ out.innerHTML = `<p class="err">${b.error}</p>`; return; }
+  if (t.error){ out.innerHTML = `<p class="err">תאריך החישוב: ${t.error}</p>`; return; }
+  const T = t.gRD;
+  if (b.gRD > T){ out.innerHTML = `<p class="err">תאריך הלידה מאוחר מתאריך החישוב</p>`; return; }
+  const bg = C.rdToG(b.gRD), tg = C.rdToG(T), th = C.rdToHeb(T);
+  let y = tg.y - bg.y, m = tg.m - bg.m, d = tg.d - bg.d;
+  if (d < 0){ m--; const pm = tg.m === 1 ? 12 : tg.m - 1, py = tg.m === 1 ? tg.y - 1 : tg.y; d += C.gMonthDays(py, pm); }
+  if (m < 0){ y--; m += 12; }
+  const p = { gY:bg.y, gM:bg.m, gD:bg.d, hY:b.heb.y, hM:b.heb.m, hD:b.heb.d };
+  let hAge = th.y - p.hY; if (C.hebAnniv(b.heb, th.y) > T) hAge--;
+  const ng = C.nextBirthday(p, 'g', T), nh = C.nextBirthday(p, 'h', T), nhH = C.rdToHeb(nh.rd);
+  const days = T - b.gRD;
+  const exact = joinHe([y && unit(y,'שנה אחת','שנתיים','שנים'), m && unit(m,'חודש אחד','חודשיים','חודשים'), d && unit(d,'יום אחד','יומיים','ימים')]) || 'נולד/ה היום';
+  const isToday = T === today();
+  out.innerHTML = `
+    <div><div class="hero"><span class="big">${y}</span><span class="bigu">${y === 1 ? 'שנה' : 'שנים'}</span></div><p class="exact">${exact}</p></div>
+    <div class="dates">
+      <div class="dt g"><div class="k">נולד/ה · לועזי</div><div class="v">${C.gStr(bg)}</div><div class="s">${dow(b.gRD)}</div></div>
+      <div class="dt h"><div class="k">נולד/ה · עברי</div><div class="v">${C.hebStr(b.heb)}</div><div class="s">גיל עברי: ${hAge}</div></div>
+    </div>
+    <div class="rows">
+      <div class="row"><span class="dot g"></span><div class="t"><b>יום הולדת לועזי ${ng.age}</b><span>${C.gStr(C.rdToG(ng.rd))} · ${dow(ng.rd)}</span></div><span class="pill g">${inDays(ng.rd - T)}</span></div>
+      <div class="row"><span class="dot h"></span><div class="t"><b>יום הולדת עברי ${nh.age}</b><span>${C.gem(nhH.d)} ב${C.monthName(nhH.m, nhH.y)} ${C.gem(nhH.y)} · ${C.gStr(C.rdToG(nh.rd))}</span></div><span class="pill h">${inDays(nh.rd - T)}</span></div>
+    </div>
+    <div class="stats">
+      <div class="st"><b>${fmt(days)}</b><span>ימים</span></div>
+      <div class="st"><b>${fmt(Math.floor(days/7))}</b><span>שבועות</span></div>
+      <div class="st"><b>${fmt(y*12+m)}</b><span>חודשים</span></div>
+      <div class="st"><b>${fmt(days*24)}</b><span>שעות (בערך)</span></div>
+    </div>
+    <p class="note">${isToday ? 'מחושב להיום' : 'מחושב ל־' + C.gStr(tg)}, ${C.hebStr(th)}. התאריך העברי של היום מתחלף בשקיעה. יום הולדת עברי של מי שנולד באדר בשנה רגילה נחגג באדר ב׳ בשנה מעוברת.</p>`;
+}
+function setCalcMode(m){
+  if (m === calcMode) return; calcMode = m;
+  $('modeG').setAttribute('aria-pressed', m === 'g'); $('modeH').setAttribute('aria-pressed', m === 'h');
+  birth.switchTo(m, $('night').checked); renderCalc();
+}
+$('modeG').onclick = () => setCalcMode('g'); $('modeH').onclick = () => setCalcMode('h');
+$('night').addEventListener('change', renderCalc);
+$('todayBtn').onclick = () => { target.set({ cal:'g', ...C.rdToG(today()) }); renderCalc(); };
+renderCalc();
+
+// ---------- People store: private to this device ----------
+let people = [];
+const LS = 'hania-gil-people';
+function lsLoad(){ try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch { return []; } }
+function persist(){
+  try { localStorage.setItem(LS, JSON.stringify(people)); } catch {}
+  // Mirror for the service worker, which checks reminders in the background
+  if ('caches' in window) caches.open('hania-gil-data').then(c => c.put('people.json', new Response(JSON.stringify(people), { headers: { 'Content-Type': 'application/json' } }))).catch(() => {});
+}
+people = lsLoad(); persist();
+$('syncNote').textContent = 'הרשימה שלך פרטית ונשמרת רק במכשיר הזה. כדאי לשמור גיבוי מדי פעם.';
+async function savePerson(p){ const i = people.findIndex(x => x.id === p.id); if (i >= 0) people[i] = p; else people.push(p); persist(); renderPeople(); }
+async function deletePerson(id){ people = people.filter(x => x.id !== id); persist(); renderPeople(); }
+
+function toast(msg){ const t = $('toast'); t.textContent = msg; t.hidden = false; clearTimeout(toast.t); toast.t = setTimeout(() => t.hidden = true, 2800); }
+
+// ---------- Backup ----------
+$('exportBtn').onclick = () => {
+  const blob = new Blob([JSON.stringify({ app: 'hania-gil', version: 1, people }, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a'); a.href = URL.createObjectURL(blob);
+  a.download = `hania-gil-גיבוי-${C.gStr(C.rdToG(today())).replace(/\./g,'-')}.json`;
+  document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+  toast('קובץ הגיבוי נשמר');
+};
+$('importBtn').onclick = () => $('importFile').click();
+$('importFile').addEventListener('change', async () => {
+  const f = $('importFile').files[0]; if (!f) return;
+  try {
+    const j = JSON.parse(await f.text()), list = Array.isArray(j) ? j : j.people;
+    if (!Array.isArray(list)) throw 0;
+    let added = 0;
+    list.forEach(p => { if (p && p.id && p.name && p.gY && p.hY){ const i = people.findIndex(x => x.id === p.id); if (i >= 0) people[i] = p; else { people.push(p); added++; } } });
+    persist(); renderPeople(); toast(`שוחזרו ${list.length} אנשים`);
+  } catch { toast('הקובץ אינו גיבוי תקין של hania גיל'); }
+  $('importFile').value = '';
+});
+
+// ---------- Notifications ----------
+const NKEY = 'hania-gil-notified';
+function paintNotif(){
+  const s = !('Notification' in window) ? 'none' : Notification.permission;
+  $('notifBtn').hidden = s !== 'default';
+  $('notifState').textContent = s === 'granted' ? 'ההתראות פעילות. תקבלו התראה ביום התזכורת כשהאפליקציה מותקנת בטלפון.'
+    : s === 'denied' ? 'ההתראות חסומות. אפשר להפעיל אותן בהגדרות האתר בדפדפן.'
+    : s === 'none' ? 'הדפדפן הזה לא תומך בהתראות. בטלפון אייפון צריך קודם להתקין את האפליקציה למסך הבית.'
+    : 'קבלו התראה בטלפון ביום התזכורת.';
+}
+async function notifyDue(){
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  const T = today();
+  let last = null; try { last = localStorage.getItem(NKEY); } catch {}
+  if (last === String(T)) return;
+  const due = C.dueReminders(people, T);
+  try { localStorage.setItem(NKEY, String(T)); } catch {}
+  if (!due.length) return;
+  const reg = 'serviceWorker' in navigator ? await navigator.serviceWorker.ready.catch(() => null) : null;
+  const body = due.map(C.describe).join('\n');
+  if (reg) reg.showNotification('תזכורת יום הולדת 🎂', { body, icon: 'icons/icon-192.png', badge: 'icons/icon-192.png', tag: 'bday-' + T, lang: 'he', dir: 'rtl' });
+  else new Notification('תזכורת יום הולדת 🎂', { body, icon: 'icons/icon-192.png' });
+}
+$('notifBtn').onclick = async () => { await Notification.requestPermission(); paintNotif(); registerPeriodic(); notifyDue(); };
+async function registerPeriodic(){
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    if ('periodicSync' in reg) await reg.periodicSync.register('bday-check', { minInterval: 12 * 60 * 60 * 1000 });
+  } catch {}
+}
+
+// ---------- Install & offline ----------
+let deferredInstall = null;
+const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent);
+window.addEventListener('beforeinstallprompt', e => { e.preventDefault(); deferredInstall = e; $('installBox').hidden = false; $('installBtn').hidden = false; });
+$('installBtn').onclick = async () => { if (!deferredInstall) return; deferredInstall.prompt(); await deferredInstall.userChoice.catch(() => {}); deferredInstall = null; $('installBox').hidden = true; };
+window.addEventListener('appinstalled', () => { $('installBox').hidden = true; toast('האפליקציה הותקנה'); });
+if (isIOS && !standalone){ $('installBox').hidden = false; $('installBtn').hidden = true; $('installText').textContent = 'להתקנה באייפון: לחצו על כפתור השיתוף בספארי ואז "הוספה למסך הבית".'; }
+if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').then(() => { if ('Notification' in window && Notification.permission === 'granted') registerPeriodic(); }).catch(() => {});
+paintNotif();
+notifyDue();
+document.addEventListener('visibilitychange', () => { if (!document.hidden){ notifyDue(); renderPeople(); } });
+
+// ---------- People view ----------
+let group = 'family';
+const WHEN = [['week','שבוע לפני'],['day','יום לפני'],['today','ביום עצמו']];
+function renderPeople(){
+  const T = today();
+  $('pTitle').textContent = group === 'family' ? 'משפחה' : 'חברים';
+  const list = people.filter(p => (p.group || 'family') === group).map(p => {
+    const nbs = C.calsOf(p).map(c => C.nextBirthday(p, c, T)).sort((a,b) => a.rd - b.rd);
+    return { p, nbs, soon: nbs[0].rd };
+  }).sort((a,b) => a.soon - b.soon);
+
+  // Birthdays in the coming week for anyone with a reminder on
+  const soon = [];
+  people.filter(p => (p.group || 'family') === group && p.remind && (p.remind.week || p.remind.day || p.remind.today)).forEach(p => {
+    C.calsOf(p).forEach(c => { const nb = C.nextBirthday(p, c, T), diff = nb.rd - T; if (diff <= 7) soon.push({ p, nb, diff }); });
+  });
+  soon.sort((a,b) => a.diff - b.diff);
+  $('alerts').hidden = !soon.length;
+  $('alerts').innerHTML = `<b>בשבוע הקרוב</b>` + soon.map(({p, nb, diff}) =>
+    `<p>${diff === 0 ? 'היום' : diff === 1 ? 'מחר' : 'בעוד ' + diff + ' ימים'}: יום ההולדת ${nb.cal === 'h' ? 'העברי' : 'הלועזי'} ה־${nb.age} של ${esc(p.name)}</p>`).join('');
+
+  if (!list.length){
+    $('plist').innerHTML = `<p class="empty">עוד אין כאן ${group === 'family' ? 'בני משפחה' : 'חברים'}.<br>לחצו "הוספה" כדי להזין שם ותאריך לידה.</p>`;
+    return;
+  }
+  $('plist').innerHTML = list.map(({p, nbs}) => {
+    const g = { y:p.gY, m:p.gM, d:p.gD }, h = { y:p.hY, m:p.hM, d:p.hD };
+    const age = C.nextBirthday(p, 'g', T).age - 1 + (C.gAnniv(g, C.rdToG(T).y) === T ? 1 : 0);
+    const rows = nbs.map(nb => {
+      const lbl = nb.cal === 'h' ? `עברי ${nb.age} · ${C.gem(C.rdToHeb(nb.rd).d)} ב${C.monthName(C.rdToHeb(nb.rd).m, C.rdToHeb(nb.rd).y)}` : `לועזי ${nb.age} · ${C.gStr(C.rdToG(nb.rd))}`;
+      const diff = nb.rd - T;
+      return `<div class="nb"><span>${lbl}</span><span class="pill ${diff === 0 ? 'now' : nb.cal}">${inDays(diff)}</span></div>`;
+    }).join('');
+    const r = p.remind || {};
+    return `<article class="person" data-id="${esc(p.id)}">
+      <div class="ptop"><div><div class="pname">${esc(p.name)}</div>
+        <div class="pmeta">גיל ${Math.max(age,0)} · ${C.gStr(g)} · ${C.hebStr(h)}</div></div>
+        <button class="edit" data-act="edit">עריכה</button></div>
+      ${rows}
+      <div class="chips" aria-label="תזכורות">${WHEN.map(([k,l]) => `<button class="chip" data-act="rem" data-k="${k}" aria-pressed="${!!r[k]}">${l}</button>`).join('')}</div>
+    </article>`;
+  }).join('');
+}
+$('plist').addEventListener('click', async e => {
+  const b = e.target.closest('button'); if (!b) return;
+  const p = people.find(x => x.id === b.closest('.person').dataset.id); if (!p) return;
+  if (b.dataset.act === 'edit') openForm(p);
+  if (b.dataset.act === 'rem'){
+    const np = { ...p, remind: { ...(p.remind || {}), [b.dataset.k]: !(p.remind || {})[b.dataset.k] } };
+    b.setAttribute('aria-pressed', np.remind[b.dataset.k]);
+    try { await savePerson(np); } catch { b.setAttribute('aria-pressed', !np.remind[b.dataset.k]); }
+  }
+});
+
+// ---------- Tabs ----------
+function setTab(t){
+  ['calc','family','friends'].forEach(x => $('tab-'+x).setAttribute('aria-pressed', x === t));
+  $('view-calc').hidden = t !== 'calc'; $('view-people').hidden = t === 'calc';
+  if (t !== 'calc'){ group = t; renderPeople(); }
+  try { localStorage.setItem('hania-gil-tab', t); } catch {}
+}
+['calc','family','friends'].forEach(x => $('tab-'+x).onclick = () => setTab(x));
+
+// ---------- Person form ----------
+let editing = null;
+const form = { grp:'family', cal:'g', by:'g', remind:{} };
+const fField = DateField($('formField'), 'f', () => {});
+function paintForm(){
+  $('fGrpFamily').setAttribute('aria-pressed', form.grp === 'family'); $('fGrpFriends').setAttribute('aria-pressed', form.grp === 'friends');
+  $('fCalG').setAttribute('aria-pressed', form.cal === 'g'); $('fCalH').setAttribute('aria-pressed', form.cal === 'h');
+  $('fByG').setAttribute('aria-pressed', form.by === 'g'); $('fByH').setAttribute('aria-pressed', form.by === 'h'); $('fByBoth').setAttribute('aria-pressed', form.by === 'both');
+  $('fRWeek').checked = !!form.remind.week; $('fRDay').checked = !!form.remind.day; $('fRToday').checked = !!form.remind.today;
+  const on = form.remind.week || form.remind.day || form.remind.today;
+  if (document.activeElement !== $('fRemOn')) $('fRemOn').checked = !!on;
+  $('fRemOpts').hidden = !$('fRemOn').checked;
+}
+function openForm(p){
+  editing = p || null;
+  $('formTitle').textContent = p ? 'עריכה' : 'הוספת אדם';
+  $('fName').value = p ? p.name : '';
+  form.grp = p ? (p.group || 'family') : group;
+  form.cal = p ? (p.cal || 'g') : 'g';
+  form.by = p ? (p.by || 'g') : 'g';
+  form.remind = p ? { ...(p.remind || {}) } : { week:false, day:true, today:true };
+  $('fRemOn').checked = !p || !!(form.remind.week || form.remind.day || form.remind.today);
+  $('fNight').checked = p ? !!p.night : false;
+  if (p) fField.set(form.cal === 'g' ? { cal:'g', y:p.gY, m:p.gM, d:p.gD } : { cal:'h', y:p.hY, m:p.hM, d:p.hD });
+  else fField.set({ cal:'g', y:0, m:1, d:1 });
+  $('fDelete').hidden = !p; $('fDelete').classList.remove('armed'); $('fDelete').textContent = 'מחיקה';
+  $('formErr').hidden = true;
+  paintForm();
+  $('formScrim').hidden = false;
+  $('fName').focus();
+}
+function closeForm(){ $('formScrim').hidden = true; $('addBtn').focus(); }
+$('addBtn').onclick = () => openForm(null);
+$('formClose').onclick = closeForm;
+$('formScrim').addEventListener('click', e => { if (e.target === $('formScrim')) closeForm(); });
+$('fGrpFamily').onclick = () => { form.grp = 'family'; paintForm(); };
+$('fGrpFriends').onclick = () => { form.grp = 'friends'; paintForm(); };
+$('fCalG').onclick = () => { fField.switchTo('g', $('fNight').checked); form.cal = 'g'; paintForm(); };
+$('fCalH').onclick = () => { fField.switchTo('h', $('fNight').checked); form.cal = 'h'; paintForm(); };
+$('fByG').onclick = () => { form.by = 'g'; paintForm(); };
+$('fByH').onclick = () => { form.by = 'h'; paintForm(); };
+$('fByBoth').onclick = () => { form.by = 'both'; paintForm(); };
+[['fRWeek','week'],['fRDay','day'],['fRToday','today']].forEach(([id,k]) => $(id).addEventListener('change', () => { form.remind[k] = $(id).checked; if (!form.remind.week && !form.remind.day && !form.remind.today) $('fRemOn').checked = false; paintForm(); }));
+$('fRemOn').addEventListener('change', () => {
+  if ($('fRemOn').checked){ if (!form.remind.week && !form.remind.day && !form.remind.today) form.remind = { week:false, day:true, today:true }; }
+  else form.remind = { week:false, day:false, today:false };
+  paintForm();
+});
+function formError(msg){ $('formErr').textContent = msg; $('formErr').hidden = false; }
+$('pform').addEventListener('submit', async e => {
+  e.preventDefault();
+  const name = $('fName').value.trim();
+  if (!name) return formError('הקלידו שם');
+  const night = $('fNight').checked;
+  const r = fField.resolve(night);
+  if (r.error) return formError(r.error);
+  if (r.gRD > today()) return formError('תאריך הלידה עוד לא הגיע');
+  const g = C.rdToG(r.gRD);
+  const p = { id: editing ? editing.id : 'p' + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+    name, group: form.grp, cal: form.cal, night, by: form.by, remind: { ...form.remind },
+    gY:g.y, gM:g.m, gD:g.d, hY:r.heb.y, hM:r.heb.m, hD:r.heb.d };
+  $('fSave').disabled = true;
+  try { await savePerson(p); closeForm(); if (p.group !== group) setTab(p.group); }
+  catch { formError('השמירה לא הצליחה. בדקו את החיבור ונסו שוב.'); }
+  $('fSave').disabled = false;
+});
+$('fDelete').onclick = async () => {
+  const b = $('fDelete');
+  if (!b.classList.contains('armed')){ b.classList.add('armed'); b.textContent = 'למחוק את ' + editing.name + '?'; return; }
+  try { await deletePerson(editing.id); closeForm(); } catch { formError('המחיקה לא הצליחה. נסו שוב.'); }
+};
+
+document.addEventListener('keydown', e => { if (e.key !== 'Escape') return; if (!$('pickScrim').hidden) closePicker(); else if (!$('formScrim').hidden) closeForm(); });
+
+let startTab = 'calc';
+try { startTab = localStorage.getItem('hania-gil-tab') || 'calc'; } catch {}
+if (['family','friends','calc'].includes(location.hash.slice(1))) startTab = location.hash.slice(1);
+setTab(startTab);
+</script>
+</body>
+</html>

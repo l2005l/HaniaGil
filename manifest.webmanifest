@@ -1,0 +1,24 @@
+{
+  "name": "hania גיל – מחשבון גיל ותזכורות",
+  "short_name": "hania גיל",
+  "description": "מחשבון גיל מדויק לפי תאריך לידה לועזי או עברי, עם רשימות משפחה וחברים ותזכורות לימי הולדת.",
+  "lang": "he",
+  "dir": "rtl",
+  "start_url": "./",
+  "scope": "./",
+  "id": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#F4F5F8",
+  "theme_color": "#F4F5F8",
+  "categories": ["utilities", "lifestyle"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "משפחה", "url": "./#family", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] },
+    { "name": "חברים", "url": "./#friends", "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192" }] }
+  ]
+}
