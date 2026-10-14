@@ -1,5 +1,5 @@
 /* hania גיל – offline cache and background birthday check */
-const VERSION = 'hania-gil-v2';
+const VERSION = 'hania-gil-v3';
 const SHELL = ['./', 'index.html', 'cal.js', 'manifest.webmanifest', 'icons/icon-192.png', 'icons/icon-512.png', 'icons/apple-touch-icon.png'];
 importScripts('cal.js'); // defines self.Cal
 

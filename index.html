@@ -199,6 +199,14 @@ input[type=number],input[type=text]{font:inherit;font-size:1.05rem;width:100%;pa
         <div style="min-width:0;flex:1 1 220px"><h3>התראות</h3><p id="notifState">קבלו התראה בטלפון ביום התזכורת.</p></div>
         <button class="btn" id="notifBtn">הפעלת התראות</button>
       </div>
+      <div class="srow" id="acctRow" hidden>
+        <div style="min-width:0;flex:1 1 220px"><h3>חשבון Hania360</h3><p id="acctState">לא חובה. שמירה בחשבון מעבירה את הרשימות לטלפון חדש ומציגה ימי הולדת קרובים ב־Hania Today.</p></div>
+        <div style="display:flex;gap:8px;flex-wrap:wrap">
+          <a class="btn primary" id="acctSignIn" href="#" hidden>כניסה לחשבון</a>
+          <button class="btn primary" id="acctOn" hidden>שמירה בחשבון</button>
+          <button class="btn" id="acctOff" hidden>הפסקת השמירה בחשבון</button>
+        </div>
+      </div>
       <div class="srow">
         <div style="min-width:0;flex:1 1 220px"><h3>גיבוי</h3><p>שמרו קובץ גיבוי של הרשימות, או שחזרו אותן במכשיר אחר.</p></div>
         <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -384,17 +392,83 @@ $('night').addEventListener('change', renderCalc);
 $('todayBtn').onclick = () => { target.set({ cal:'g', ...C.rdToG(today()) }); renderCalc(); };
 renderCalc();
 
+// ---------- Hania360 account (optional) ----------
+// Off by default: lists stay on this device. When the person turns it on, the list is
+// also kept in their Hania360 account (Hania Pass), so another phone gets it after
+// signing in, and Hania Today shows upcoming birthdays.
+const ACCT = { base: '', on: false, timer: 0 };
+const AK = { synced: 'hania-gil-acct-synced', dirty: 'hania-gil-acct-dirty' };
+function lsGet(k){ try { return localStorage.getItem(k); } catch { return null; } }
+function lsSet(k, v){ try { if (v === null) localStorage.removeItem(k); else localStorage.setItem(k, v); } catch {} }
+function passBase(){
+  const h = location.hostname;
+  if (h === 'hania360.com' || h.endsWith('.hania360.com')) return 'https://pass.hania360.com';
+  if (h.endsWith('.lior-hania.workers.dev')) return 'https://hania-pass-staging.lior-hania.workers.dev';
+  return '';
+}
+function passCsrf(){ const c = document.cookie.split(';').map(x => x.trim()).find(x => x.startsWith('hp_csrf=')); return c ? c.slice(8) : ''; }
+async function passGil(method, body){
+  const r = await fetch(ACCT.base + '/api/gil', { method, credentials: 'include', cache: 'no-store',
+    headers: method === 'GET' ? {} : { 'content-type': 'application/json', 'x-csrf-token': passCsrf() },
+    body: body ? JSON.stringify(body) : undefined });
+  const j = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(j.error || 'http');
+  return j;
+}
+function acctPaint(state){
+  $('acctRow').hidden = !ACCT.base;
+  $('acctSignIn').hidden = state !== 'out'; $('acctOn').hidden = state !== 'off'; $('acctOff').hidden = state !== 'on';
+  $('acctState').textContent = state === 'on' ? 'הרשימות נשמרות גם בחשבון Hania360 שלך. בטלפון אחר מספיק להיכנס לחשבון.'
+    : 'לא חובה. שמירה בחשבון מעבירה את הרשימות לטלפון חדש ומציגה ימי הולדת קרובים ב־Hania Today.';
+  $('syncNote').textContent = state === 'on' ? 'הרשימה נשמרת במכשיר הזה ובחשבון Hania360 שלך.' : 'הרשימה שלך פרטית ונשמרת רק במכשיר הזה. כדאי לשמור גיבוי מדי פעם.';
+}
+async function acctPush(){
+  try { const j = await passGil('PUT', { people }); lsSet(AK.synced, String(j.updated)); lsSet(AK.dirty, null); }
+  catch { /* stays dirty; tried again next time */ }
+}
+function acctChanged(){
+  if (!ACCT.on) return;
+  lsSet(AK.dirty, '1'); clearTimeout(ACCT.timer); ACCT.timer = setTimeout(acctPush, 800);
+}
+async function acctLoad(){
+  ACCT.base = passBase(); if (!ACCT.base) return acctPaint('none');
+  let j; try { j = await passGil('GET'); } catch { return acctPaint('none'); }
+  if (!j.signedIn) { $('acctSignIn').href = ACCT.base + '/?return=' + encodeURIComponent(location.href); return acctPaint('out'); }
+  if (!j.saved) { ACCT.on = false; return acctPaint('off'); }
+  ACCT.on = true; acctPaint('on');
+  const synced = +(lsGet(AK.synced) || 0), dirty = lsGet(AK.dirty) === '1';
+  if (j.updated > synced) {
+    if (dirty || (!synced && people.length)) {
+      // Both sides changed: keep everyone, this device's version wins for the same person.
+      const mine = new Set(people.map(p => p.id));
+      people = people.concat((j.people || []).filter(p => !mine.has(p.id)));
+      persist(false); renderPeople(); await acctPush();
+    } else { people = j.people || []; persist(false); lsSet(AK.synced, String(j.updated)); renderPeople(); }
+  } else if (dirty) await acctPush();
+}
+$('acctOn').onclick = async () => {
+  try { await passGil('PUT', { people }); ACCT.on = true; lsSet(AK.dirty, null); await acctLoad(); toast('הרשימות נשמרו בחשבון Hania360'); }
+  catch { toast('השמירה בחשבון לא הצליחה. נסו שוב.'); }
+};
+$('acctOff').onclick = async () => {
+  if (!confirm('להפסיק לשמור את הרשימות בחשבון? הן יימחקו מהחשבון ויישארו רק במכשיר הזה.')) return;
+  try { await passGil('DELETE'); ACCT.on = false; lsSet(AK.synced, null); lsSet(AK.dirty, null); acctPaint('off'); toast('הרשימות נשארות רק במכשיר הזה'); }
+  catch { toast('לא הצלחנו לעדכן את החשבון. נסו שוב.'); }
+};
+
 // ---------- People store: private to this device ----------
 let people = [];
 const LS = 'hania-gil-people';
 function lsLoad(){ try { return JSON.parse(localStorage.getItem(LS) || '[]'); } catch { return []; } }
-function persist(){
+function persist(changed = true){
   try { localStorage.setItem(LS, JSON.stringify(people)); } catch {}
+  if (changed) acctChanged();
   // Mirror for the service worker, which checks reminders in the background
   if ('caches' in window) caches.open('hania-gil-data').then(c => c.put('people.json', new Response(JSON.stringify(people), { headers: { 'Content-Type': 'application/json' } }))).catch(() => {});
 }
-people = lsLoad(); persist();
+people = lsLoad(); persist(false);
 $('syncNote').textContent = 'הרשימה שלך פרטית ונשמרת רק במכשיר הזה. כדאי לשמור גיבוי מדי פעם.';
+acctLoad();
 async function savePerson(p){ const i = people.findIndex(x => x.id === p.id); if (i >= 0) people[i] = p; else people.push(p); persist(); renderPeople(); }
 async function deletePerson(id){ people = people.filter(x => x.id !== id); persist(); renderPeople(); }
 
