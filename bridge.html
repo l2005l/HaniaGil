@@ -1,0 +1,16 @@
+<!doctype html><meta charset="utf-8"><title>HaniaGil bridge</title>
+<script src="cal.js"></script>
+<script>
+// The hania360.com search box asks for birthdays: each name with the next birthday and age.
+// postMessage with a fixed target origin, so only the hania360.com home page receives it.
+(function () {
+  if (window.parent === window) return;
+  var people = []; try { people = JSON.parse(localStorage.getItem('hania-gil-people') || '[]') || []; } catch (e) {}
+  var C = window.Cal, T = C.todayRD();
+  var out = people.filter(function (p) { return p && p.name && p.gY; }).slice(0, 300).map(function (p) {
+    var nb = C.calsOf(p).map(function (c) { return C.nextBirthday(p, c, T); }).sort(function (a, b) { return a.rd - b.rd; })[0];
+    return { name: String(p.name).slice(0, 40), group: p.group || 'family', days: nb.rd - T, age: nb.age, heb: nb.cal === 'h' };
+  });
+  (location.ancestorOrigins && /^https:\/\/(www\.)?hania360\.com$/.test(location.ancestorOrigins[0] || '') ? [location.ancestorOrigins[0]] : ['https://hania360.com', 'https://www.hania360.com']).forEach(function (o) { window.parent.postMessage({ hania: 'bridge', app: 'gil', people: out }, o); });
+})();
+</script>
