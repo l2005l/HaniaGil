@@ -373,6 +373,7 @@ function renderCalc(){
     <div class="rows">
       <div class="row"><span class="dot g"></span><div class="t"><b>יום הולדת לועזי ${ng.age}</b><span>${C.gStr(C.rdToG(ng.rd))} · ${dow(ng.rd)}</span></div><span class="pill g">${inDays(ng.rd - T)}</span></div>
       <div class="row"><span class="dot h"></span><div class="t"><b>יום הולדת עברי ${nh.age}</b><span>${C.gem(nhH.d)} ב${C.monthName(nhH.m, nhH.y)} ${C.gem(nhH.y)} · ${C.gStr(C.rdToG(nh.rd))}</span></div><span class="pill h">${inDays(nh.rd - T)}</span></div>
+      ${Math.min(ng.rd, nh.rd) - T <= 30 && C.giftIdea(Math.min(ng.rd, nh.rd) === ng.rd ? ng.age : nh.age) ? `<p class="note">🎁 רעיון למתנה: ${C.giftIdea(Math.min(ng.rd, nh.rd) === ng.rd ? ng.age : nh.age)}</p>` : ''}
     </div>
     <div class="stats">
       <div class="st"><b>${fmt(days)}</b><span>ימים</span></div>

@@ -85,13 +85,20 @@
     const s = new Intl.DateTimeFormat('en-CA', { timeZone: tz || undefined, year: 'numeric', month: '2-digit', day: '2-digit' }).format(new Date());
     const [y, m, d] = s.split('-').map(Number); return gToRD(y, m, d);
   }
+  // A simple gift idea by the age being celebrated, for the reminder a day or a week before.
+  const GIFTS = [[1, 'צעצוע רך או ספר קרטון'], [3, 'ספר תמונות או קוביות בנייה'], [6, 'ערכת יצירה או משחק קופסה ראשון'], [9, 'לגו, ספר הרפתקאות או כדור'],
+    [12, 'משחק קופסה, ספר סדרה או ערכת מדע'], [15, 'אוזניות, שובר לחנות ספרים או כרטיס לאטרקציה'], [18, 'שובר לבגדים, תיק או חוויה עם חברים'],
+    [25, 'חוויה (מסעדה, הופעה) או משהו לדירה'], [40, 'ארוחה זוגית, יום ספא או גאדג׳ט לבית'], [60, 'אלבום תמונות משפחתי, סדנה או ארוחה משפחתית'],
+    [80, 'אלבום תמונות, ספר זיכרונות או ביקור משפחתי'], [200, 'ביקור, אלבום תמונות משפחתי וזמן ביחד']];
+  function giftIdea(age) { for (const [max, g] of GIFTS) if (age <= max) return g; return ''; }
   function describe(r) {
     const whenTxt = { today: 'היום', day: 'מחר', week: 'בעוד שבוע' }[r.when];
     const calTxt = r.cal === 'h' ? 'העברי' : 'הלועזי';
     const dateTxt = r.cal === 'h' ? hebStr(rdToHeb(r.rd)) : gStr(rdToG(r.rd));
-    return `${whenTxt} יום ההולדת ${calTxt} ה־${r.age} של ${r.name} (${dateTxt})`;
+    const gift = r.when !== 'today' && giftIdea(r.age) ? ` · רעיון למתנה: ${giftIdea(r.age)}` : '';
+    return `${whenTxt} יום ההולדת ${calTxt} ה־${r.age} של ${r.name} (${dateTxt})${gift}`;
   }
 
-  const api = { isLeap, monthDays, hebToRD, rdToHeb, gToRD, rdToG, gMonthDays, gem, monthName, GMONTHS, hebStr, gStr, hebAnniv, gAnniv, nextBirthday, calsOf, dueReminders, todayRD, describe };
+  const api = { isLeap, monthDays, hebToRD, rdToHeb, gToRD, rdToG, gMonthDays, gem, monthName, GMONTHS, hebStr, gStr, hebAnniv, gAnniv, nextBirthday, calsOf, dueReminders, todayRD, describe, giftIdea };
   if (typeof module !== 'undefined' && module.exports) module.exports = api; else root.Cal = api;
 })(typeof window !== 'undefined' ? window : globalThis);
