@@ -577,16 +577,42 @@ function renderPeople(){
     return `<article class="person" data-id="${esc(p.id)}">
       <div class="ptop"><div><div class="pname">${esc(p.name)}</div>
         <div class="pmeta">גיל ${Math.max(age,0)} · ${C.gStr(g)} · ${C.hebStr(h)}</div></div>
-        <button class="edit" data-act="edit">עריכה</button></div>
+        <span style="display:flex;gap:2px;flex:none"><button class="edit" data-act="wish" title="ברכה מוכנה לוואטסאפ">💬 ברכה</button><button class="edit" data-act="edit">עריכה</button></span></div>
       ${rows}
       <div class="chips" aria-label="תזכורות">${WHEN.map(([k,l]) => `<button class="chip" data-act="rem" data-k="${k}" aria-pressed="${!!r[k]}">${l}</button>`).join('')}</div>
     </article>`;
   }).join('');
 }
+// A ready birthday greeting by age and relation; a different one each time, so a second tap gives another option.
+function wish(name, age, grp){
+  const first = String(name).trim().split(/\s+/)[0], fam = grp === 'family';
+  const pick = a => a[Math.floor(Math.random() * a.length)];
+  const round = age >= 20 && age % 10 === 0;
+  let lines;
+  if (age <= 12) lines = [
+    `${first}, מזל טוב ליום ההולדת ה־${age}! 🎂🎈 מאחלים לך שנה מלאה בצחוק, משחקים, חברים טובים והמון הפתעות.`,
+    `יום הולדת ${age} שמח, ${first}! 🥳 המון שמחה, בריאות וחיוכים גדולים. איזה כיף לחגוג איתך!`,
+    `מזל טוב ${first}! 🎉 ${age} זה גיל מושלם להרפתקאות חדשות. שכל המשאלות שלך יתגשמו!`];
+  else if (age <= 19) lines = [
+    `${first}, מזל טוב ליום ההולדת ה־${age}! 🎉 שתהיה לך שנה של הצלחות, חברים אמיתיים והמון רגעים טובים.`,
+    `יום הולדת שמח ${first}! 🎂 ${age} זה כבר רציני. מאחלים לך שנה מלאה בהגשמה, ביטחון ושמחה.`];
+  else if (age >= 70) lines = [
+    `${first}, מזל טוב ליום ההולדת ה־${age}! 🎂 מאחלים לך בריאות איתנה, נחת מכל המשפחה ושמחה, עד 120!`,
+    `יום הולדת שמח ${first}! 🌸 תודה על כל האהבה והחוכמה. שתהיה לך שנה של בריאות, שקט ונחת, עד 120!`];
+  else lines = [
+    `${first}, מזל טוב ליום ההולדת${round ? ' העגול' : ''}${age ? ' ה־' + age : ''}! 🎉 מאחלים לך שנה של בריאות, אושר, הצלחה וכל מה שהלב רוצה.`,
+    `יום הולדת שמח ${first}! 🎂 שתהיה לך שנה מלאה ברגעים טובים, אנשים אוהבים והגשמה. מגיע לך הכי טוב.`,
+    `מזל טוב ${first}! 🥂 ${round ? age + ' זה גיל מושלם. ' : ''}שהשנה הזאת תביא בריאות, שקט, שמחה והפתעות טובות.`];
+  return pick(lines) + (fam ? ' אוהבים אותך ❤️' : ' חגיגה שמחה! 🎈');
+}
 $('plist').addEventListener('click', async e => {
   const b = e.target.closest('button'); if (!b) return;
   const p = people.find(x => x.id === b.closest('.person').dataset.id); if (!p) return;
   if (b.dataset.act === 'edit') openForm(p);
+  if (b.dataset.act === 'wish'){
+    const T = today(), nb = C.calsOf(p).map(c => C.nextBirthday(p, c, T)).sort((a,b) => a.rd - b.rd)[0];
+    window.open('https://wa.me/?text=' + encodeURIComponent(wish(p.name, nb.age, p.group || 'family')), '_blank', 'noopener');
+  }
   if (b.dataset.act === 'rem'){
     const np = { ...p, remind: { ...(p.remind || {}), [b.dataset.k]: !(p.remind || {})[b.dataset.k] } };
     b.setAttribute('aria-pressed', np.remind[b.dataset.k]);
